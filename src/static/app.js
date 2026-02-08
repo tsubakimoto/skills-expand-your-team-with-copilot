@@ -1030,6 +1030,7 @@ document.addEventListener("DOMContentLoaded", () => {
     textArea.select();
 
     try {
+      // Note: execCommand is deprecated but used here for legacy browser support
       const successful = document.execCommand("copy");
       if (successful) {
         showMessage("Activity information copied to clipboard!", "success");
@@ -1046,8 +1047,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function tryNativeShare(shareData) {
-    // Check if we should try native share (usually on mobile)
-    if (navigator.share && /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+    // Use native share API if available (typically on mobile devices)
+    if (navigator.share) {
       navigator.share({
         title: shareData.activityName,
         text: shareData.text,
