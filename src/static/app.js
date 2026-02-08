@@ -568,6 +568,10 @@ document.addEventListener("DOMContentLoaded", () => {
           </div>
         `
         }
+        <button class="share-button" data-activity="${name}" title="Share this activity">
+          <span class="share-icon">🔗</span>
+          Share
+        </button>
       </div>
     `;
 
@@ -586,6 +590,12 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       }
     }
+
+    // Add click handler for share button
+    const shareButton = activityCard.querySelector(".share-button");
+    shareButton.addEventListener("click", () => {
+      openShareModal(name, details);
+    });
 
     activitiesList.appendChild(activityCard);
   }
@@ -854,6 +864,205 @@ document.addEventListener("DOMContentLoaded", () => {
       console.error("Error signing up:", error);
     }
   });
+
+  // Share modal and sharing functions
+  function openShareModal(activityName, details) {
+    // Create or get the share modal
+    let shareModal = document.getElementById("share-modal");
+    if (!shareModal) {
+      shareModal = document.createElement("div");
+      shareModal.id = "share-modal";
+      shareModal.className = "modal hidden";
+      shareModal.innerHTML = `
+        <div class="modal-content share-modal-content">
+          <span class="close-share-modal">&times;</span>
+          <h3>Share Activity</h3>
+          <div class="share-activity-info">
+            <h4 id="share-activity-name"></h4>
+            <p id="share-activity-description"></p>
+          </div>
+          <div class="share-buttons-container">
+            <button class="share-platform-button twitter-share" title="Share on Twitter/X">
+              <span class="platform-icon">𝕏</span>
+              <span>Twitter/X</span>
+            </button>
+            <button class="share-platform-button facebook-share" title="Share on Facebook">
+              <span class="platform-icon">📘</span>
+              <span>Facebook</span>
+            </button>
+            <button class="share-platform-button linkedin-share" title="Share on LinkedIn">
+              <span class="platform-icon">💼</span>
+              <span>LinkedIn</span>
+            </button>
+            <button class="share-platform-button copy-link" title="Copy link to clipboard">
+              <span class="platform-icon">📋</span>
+              <span>Copy Link</span>
+            </button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(shareModal);
+
+      // Add close modal event listener
+      const closeShareModal = shareModal.querySelector(".close-share-modal");
+      closeShareModal.addEventListener("click", closeShareModalHandler);
+
+      // Close when clicking outside
+      shareModal.addEventListener("click", (event) => {
+        if (event.target === shareModal) {
+          closeShareModalHandler();
+        }
+      });
+    }
+
+    // Set activity information
+    document.getElementById("share-activity-name").textContent = activityName;
+    document.getElementById("share-activity-description").textContent = details.description;
+
+    // Create share data
+    const shareUrl = window.location.origin + window.location.pathname;
+    const shareText = `Check out "${activityName}" at Mergington High School! ${details.description}`;
+    const shareData = {
+      activityName,
+      description: details.description,
+      schedule: formatSchedule(details),
+      url: shareUrl,
+      text: shareText
+    };
+
+    // Set up share button event listeners
+    const twitterButton = shareModal.querySelector(".twitter-share");
+    const facebookButton = shareModal.querySelector(".facebook-share");
+    const linkedinButton = shareModal.querySelector(".linkedin-share");
+    const copyLinkButton = shareModal.querySelector(".copy-link");
+
+    // Remove existing event listeners by cloning
+    const newTwitterButton = twitterButton.cloneNode(true);
+    const newFacebookButton = facebookButton.cloneNode(true);
+    const newLinkedinButton = linkedinButton.cloneNode(true);
+    const newCopyLinkButton = copyLinkButton.cloneNode(true);
+
+    twitterButton.parentNode.replaceChild(newTwitterButton, twitterButton);
+    facebookButton.parentNode.replaceChild(newFacebookButton, facebookButton);
+    linkedinButton.parentNode.replaceChild(newLinkedinButton, linkedinButton);
+    copyLinkButton.parentNode.replaceChild(newCopyLinkButton, copyLinkButton);
+
+    // Add new event listeners
+    newTwitterButton.addEventListener("click", () => shareOnTwitter(shareData));
+    newFacebookButton.addEventListener("click", () => shareOnFacebook(shareData));
+    newLinkedinButton.addEventListener("click", () => shareOnLinkedIn(shareData));
+    newCopyLinkButton.addEventListener("click", () => copyShareLink(shareData));
+
+    // Show the modal
+    shareModal.classList.remove("hidden");
+    setTimeout(() => {
+      shareModal.classList.add("show");
+    }, 10);
+
+    // Try using native share API if available
+    if (navigator.share) {
+      tryNativeShare(shareData);
+    }
+  }
+
+  function closeShareModalHandler() {
+    const shareModal = document.getElementById("share-modal");
+    if (shareModal) {
+      shareModal.classList.remove("show");
+      setTimeout(() => {
+        shareModal.classList.add("hidden");
+      }, 300);
+    }
+  }
+
+  function shareOnTwitter(shareData) {
+    const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareData.text)}&url=${encodeURIComponent(shareData.url)}`;
+    window.open(twitterUrl, "_blank", "width=600,height=400");
+    showMessage("Opening Twitter to share activity...", "info");
+  }
+
+  function shareOnFacebook(shareData) {
+    const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareData.url)}`;
+    window.open(facebookUrl, "_blank", "width=600,height=400");
+    showMessage("Opening Facebook to share activity...", "info");
+  }
+
+  function shareOnLinkedIn(shareData) {
+    const linkedinUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareData.url)}`;
+    window.open(linkedinUrl, "_blank", "width=600,height=400");
+    showMessage("Opening LinkedIn to share activity...", "info");
+  }
+
+  function copyShareLink(shareData) {
+    const textToCopy = `${shareData.activityName}\n\n${shareData.description}\n\nSchedule: ${shareData.schedule}\n\n${shareData.url}`;
+    
+    // Try using modern clipboard API
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(textToCopy)
+        .then(() => {
+          showMessage("Activity information copied to clipboard!", "success");
+          closeShareModalHandler();
+        })
+        .catch((err) => {
+          console.error("Failed to copy:", err);
+          fallbackCopyTextToClipboard(textToCopy);
+        });
+    } else {
+      fallbackCopyTextToClipboard(textToCopy);
+    }
+  }
+
+  function fallbackCopyTextToClipboard(text) {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    textArea.style.position = "fixed";
+    textArea.style.top = "0";
+    textArea.style.left = "0";
+    textArea.style.width = "2em";
+    textArea.style.height = "2em";
+    textArea.style.padding = "0";
+    textArea.style.border = "none";
+    textArea.style.outline = "none";
+    textArea.style.boxShadow = "none";
+    textArea.style.background = "transparent";
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+
+    try {
+      const successful = document.execCommand("copy");
+      if (successful) {
+        showMessage("Activity information copied to clipboard!", "success");
+        closeShareModalHandler();
+      } else {
+        showMessage("Failed to copy to clipboard", "error");
+      }
+    } catch (err) {
+      console.error("Fallback copy failed:", err);
+      showMessage("Failed to copy to clipboard", "error");
+    }
+
+    document.body.removeChild(textArea);
+  }
+
+  function tryNativeShare(shareData) {
+    // Check if we should try native share (usually on mobile)
+    if (navigator.share && /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+      navigator.share({
+        title: shareData.activityName,
+        text: shareData.text,
+        url: shareData.url
+      })
+        .then(() => {
+          showMessage("Activity shared successfully!", "success");
+          closeShareModalHandler();
+        })
+        .catch((err) => {
+          // User cancelled or error occurred, just keep modal open
+          console.log("Native share cancelled or failed:", err);
+        });
+    }
+  }
 
   // Expose filter functions to window for future UI control
   window.activityFilters = {

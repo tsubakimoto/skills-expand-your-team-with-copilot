@@ -664,3 +664,128 @@ footer {
 #logout-button:hover {
   background-color: rgba(255, 255, 255, 0.3);
 }
+
+/* Share button styles */
+.share-button {
+  background-color: var(--secondary);
+  color: var(--secondary-text);
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: background-color 0.3s ease, transform 0.1s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.share-button:hover {
+  background-color: var(--secondary-dark);
+  transform: translateY(-1px);
+}
+
+.share-button:active {
+  transform: translateY(0);
+}
+
+.share-icon {
+  font-size: 1rem;
+}
+
+/* Share modal styles */
+.share-modal-content {
+  max-width: 500px;
+}
+
+.share-activity-info {
+  margin: 20px 0;
+  padding: 15px;
+  background-color: var(--background);
+  border-radius: 8px;
+}
+
+.share-activity-info h4 {
+  color: var(--primary);
+  margin-bottom: 8px;
+  font-size: 1.1rem;
+}
+
+.share-activity-info p {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.share-buttons-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.share-platform-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border: 2px solid var(--border);
+  background-color: var(--surface);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  color: var(--text-primary);
+}
+
+.share-platform-button:hover {
+  border-color: var(--primary);
+  background-color: var(--primary-light);
+  color: var(--primary-text);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.share-platform-button:active {
+  transform: translateY(0);
+}
+
+.platform-icon {
+  font-size: 1.2rem;
+}
+
+/* Specific colors for social media buttons */
+.twitter-share:hover {
+  background-color: #1DA1F2;
+  border-color: #1DA1F2;
+}
+
+.facebook-share:hover {
+  background-color: #1877F2;
+  border-color: #1877F2;
+}
+
+.linkedin-share:hover {
+  background-color: #0A66C2;
+  border-color: #0A66C2;
+}
+
+.copy-link:hover {
+  background-color: var(--success);
+  border-color: var(--success);
+}
+
+/* Responsive adjustments for share modal */
+@media (max-width: 600px) {
+  .share-buttons-container {
+    grid-template-columns: 1fr;
+  }
+  
+  .share-modal-content {
+    margin: 20px;
+    max-width: 100%;
+  }
+}
